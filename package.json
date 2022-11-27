@@ -2,7 +2,8 @@
   "name": "island-juejin",
   "version": "0.0.0",
   "scripts": {
-    "start": "tsc -w"
+    "dev": "npx tsup --watch",
+    "build": "npx tsup"
   },
   "bin": {
     "island": "bin/island.js"
@@ -19,8 +20,10 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-react": "^7.31.11",
+    "ora": "^6.1.2",
     "prettier": "^2.7.1",
     "rollup": "^3.4.0",
+    "tsup": "^6.5.0",
     "typescript": "^4.9.3"
   },
   "dependencies": {

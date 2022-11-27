@@ -3,44 +3,51 @@ import { build as viteBuild, InlineConfig } from 'vite';
 import { RollupOutput } from 'rollup';
 import pluginReact from '@vitejs/plugin-react';
 import { CLIENT_ENTRY_PATH, SERVER_ENTRY_PATH } from './constants';
-import * as fs from 'fs-extra';
+import fs from 'fs-extra';
+import ora from 'ora';
+import { pathToFileURL } from 'url';
+
+// 通过 dynamicImport，绕过 ts 编译，避免 import 语句被编译为 require
+// const dynamicImport = new Function('m', 'return import(m)');
 
 export async function bundle(root: string) {
-  try {
-    const resolveViteConfig = (isServer: boolean): InlineConfig => {
-      return {
-        mode: 'production',
-        root,
-        build: {
-          ssr: isServer,
-          outDir: isServer ? '.temp' : 'build',
-          rollupOptions: {
-            input: isServer ? SERVER_ENTRY_PATH : CLIENT_ENTRY_PATH,
-            output: {
-              format: isServer ? 'cjs' : 'esm',
-            },
+  const resolveViteConfig = (isServer: boolean): InlineConfig => {
+    return {
+      mode: 'production',
+      root,
+      build: {
+        ssr: isServer,
+        outDir: isServer ? '.temp' : 'build',
+        rollupOptions: {
+          input: isServer ? SERVER_ENTRY_PATH : CLIENT_ENTRY_PATH,
+          output: {
+            format: isServer ? 'cjs' : 'esm',
           },
         },
-        plugins: [pluginReact()],
-      };
+      },
+      plugins: [pluginReact()],
     };
+  };
 
-    const clientBuild = async () => {
-      return viteBuild(resolveViteConfig(false));
-    };
+  const clientBuild = async () => {
+    return viteBuild(resolveViteConfig(false));
+  };
 
-    const serverBuild = async () => {
-      return viteBuild(resolveViteConfig(true));
-    };
+  const serverBuild = async () => {
+    return viteBuild(resolveViteConfig(true));
+  };
 
-    console.log('Building client and server bundles...');
+  // const { default: ora } = await dynamicImport('ora');
+  // const spinner = ora();
+  // spinner.start('Building client and server bundles...');
+
+  try {
     // await clientBuild();
     // await serverBuild();
     const [clientBundle, serverBundle] = await Promise.all([clientBuild(), serverBuild()]);
-
     return [clientBundle, serverBundle] as [RollupOutput, RollupOutput];
   } catch (e) {
-    console.log('Error: ', e);
+    console.log(e);
   }
 }
 
@@ -59,12 +66,13 @@ export async function renderPage(render: () => string, root: string, clientBundl
       </head>
       <body>
         <div id="root">${appHtml}</div>
-        <script src="/${clientChunk.fileName}" type="module"></script>
+        <script src="/${clientChunk?.fileName}" type="module"></script>
       </body>
     </html>
   `.trim();
 
   // 将产物写到本地
+  await fs.ensureDir(path.join(root, 'build'));
   await fs.writeFile(path.join(root, 'build', 'index.html'), html);
   await fs.remove(path.join(root, '.temp'));
 }
@@ -73,8 +81,8 @@ export async function build(root: string) {
   // 1. 打包 client 和 server 的 bundle
   const [clientBundle] = await bundle(root);
   // 2. 引入 ssr-entry 模块的打包产物
-  const ssrEntryPath = path.resolve(root, '.temp', 'ssr-entry.js');
+  const ssrEntryPath = path.join(root, '.temp', 'ssr-entry.js');
   // 3. 服务端渲染，产出 html
-  const { render } = require(ssrEntryPath);
+  const { render } = await import(pathToFileURL(ssrEntryPath).href);
   await renderPage(render, root, clientBundle);
 }
