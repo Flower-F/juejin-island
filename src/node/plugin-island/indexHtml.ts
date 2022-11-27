@@ -15,11 +15,11 @@ export function pluginIndexHtml(): Plugin {
             attrs: {
               type: 'module',
               // vite 约定 @fs 开头为绝对路径
-              src: `/@fs/${CLIENT_ENTRY_PATH}`
+              src: `/@fs/${CLIENT_ENTRY_PATH}`,
             },
-            injectTo: 'body'
-          }
-        ]
+            injectTo: 'body',
+          },
+        ],
       };
     },
     configureServer(server) {
@@ -30,16 +30,12 @@ export function pluginIndexHtml(): Plugin {
           // 不能热更新
           // const content = await readFile(DEFAULT_TEMPLATE_PATH, 'utf-8');
           let content = await readFile(DEFAULT_TEMPLATE_PATH, 'utf-8');
-          content = await server.transformIndexHtml(
-            req.url,
-            content,
-            req.originalUrl
-          );
+          content = await server.transformIndexHtml(req.url, content, req.originalUrl);
           // 2 响应 html
           res.setHeader('Content-Type', 'text/html');
           res.end(content);
         });
       };
-    }
+    },
   };
 }
