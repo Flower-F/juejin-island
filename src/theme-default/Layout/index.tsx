@@ -5,7 +5,7 @@ export const Layout = () => {
 
   return (
     <div>
-      <h1>Layout 1111</h1>
+      <h1>Layout</h1>
       <div>
         {count}
         <button onClick={() => setCount(count + 1)}>Add count</button>

@@ -1,0 +1,11 @@
+{
+  "private": true,
+  "scripts": {
+    "dev": "island dev docs",
+    "build": "island build docs",
+    "preview": "island start docs"
+  },
+  "dependencies": {
+    "islandjs": "../../.."
+  }
+}
