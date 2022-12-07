@@ -5,8 +5,8 @@
     "prepare": "husky install",
     "dev": "tsup --watch",
     "build": "tsup",
-    "lint": "eslint --fix --ext .ts,.tsx,.js,.jsx ./",
-    "lint:fix": "eslint --fix --ext .ts,.tsx,.js,.jsx --quiet ./",
+    "lint": "eslint --ext .ts,.tsx,.js,.jsx ./",
+    "lint:fix": "eslint --ext .ts,.tsx,.js,.jsx --fix --quiet ./",
     "test:unit": "vitest --ui",
     "test:e2e": "playwright test",
     "prepare:e2e": "tsx scripts/prepare-e2e.ts"
