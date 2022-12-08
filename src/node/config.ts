@@ -1,22 +1,15 @@
 import { resolve } from 'path';
 import fs from 'fs-extra';
 import { loadConfigFromFile } from 'vite';
-import { UserConfig } from '../shared/type/index';
+import { SiteConfig, UserConfig } from 'shared/types';
 
 type RawConfig = UserConfig | Promise<UserConfig> | (() => UserConfig | Promise<UserConfig>);
 
-export async function resolveConfig(root: string, command: 'serve' | 'build', mode: 'production' | 'development') {
+export async function resolveUserConfig(root: string, command: 'serve' | 'build', mode: 'production' | 'development') {
   // 1. 获取配置文件路径，要支持 js 和 ts 两种格式
   const configPath = getUserConfigPath(root);
   // 2. 解析配置文件
-  const result = await loadConfigFromFile(
-    {
-      command,
-      mode,
-    },
-    configPath,
-    root,
-  );
+  const result = await loadConfigFromFile({ command, mode }, configPath, root);
 
   if (result) {
     const { config: rawConfig = {} as RawConfig } = result;
@@ -30,6 +23,26 @@ export async function resolveConfig(root: string, command: 'serve' | 'build', mo
   }
 }
 
+function resolveSiteData(userConfig: UserConfig): UserConfig {
+  return {
+    title: userConfig.title || 'Island.js',
+    description: userConfig.description || 'SSG Framework',
+    themeConfig: userConfig.themeConfig || {},
+    vite: userConfig.vite || {},
+  };
+}
+
+export async function resolveConfig(root: string, command: 'serve' | 'build', mode: 'development' | 'production') {
+  const [configPath, userConfig] = await resolveUserConfig(root, command, mode);
+  const siteConfig: SiteConfig = {
+    root,
+    configPath,
+    siteData: resolveSiteData(userConfig as UserConfig),
+  };
+
+  return siteConfig;
+}
+
 function getUserConfigPath(root: string) {
   try {
     const supportConfigFiles = ['config.ts', 'config.js'];
@@ -39,4 +52,8 @@ function getUserConfigPath(root: string) {
     console.log('Failed to load the user config: ', error);
     throw new Error(error);
   }
+}
+
+export function defineConfig(config: UserConfig) {
+  return config;
 }

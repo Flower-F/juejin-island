@@ -30,8 +30,14 @@ export interface ThemeConfig {
 }
 
 export interface UserConfig {
-  title: string;
-  description: string;
-  themeConfig: ThemeConfig;
-  vite: ViteUserConfig;
+  title?: string;
+  description?: string;
+  themeConfig?: ThemeConfig;
+  vite?: ViteUserConfig;
+}
+
+export interface SiteConfig {
+  root: string;
+  configPath: string;
+  siteData: UserConfig;
 }
