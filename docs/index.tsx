@@ -1,5 +1,5 @@
 const Index = () => {
-  return <div>Guide/Index</div>;
+  return <div>Index</div>;
 };
 
 export default Index;
