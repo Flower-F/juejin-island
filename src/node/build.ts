@@ -6,11 +6,13 @@ import { CLIENT_ENTRY_PATH, SERVER_ENTRY_PATH } from './constants';
 import fs from 'fs-extra';
 // import ora from 'ora';
 import { pathToFileURL } from 'url';
+import { SiteConfig } from 'shared/types';
+import { pluginConfig } from './plugin-island/config';
 
 // 通过 dynamicImport，绕过 ts 编译，避免 import 语句被编译为 require
 // const dynamicImport = new Function('m', 'return import(m)');
 
-export async function bundle(root: string) {
+export async function bundle(root: string, config: SiteConfig) {
   const resolveViteConfig = (isServer: boolean): InlineConfig => {
     return {
       mode: 'production',
@@ -25,7 +27,10 @@ export async function bundle(root: string) {
           },
         },
       },
-      plugins: [pluginReact()],
+      plugins: [pluginReact(), pluginConfig(config)],
+      ssr: {
+        noExternal: ['react-router-dom'],
+      },
     };
   };
 
@@ -77,9 +82,9 @@ export async function renderPage(render: () => string, root: string, clientBundl
   await fs.remove(path.join(root, '.temp'));
 }
 
-export async function build(root: string) {
+export async function build(root: string, config: SiteConfig) {
   // 1. 打包 client 和 server 的 bundle
-  const [clientBundle] = await bundle(root);
+  const [clientBundle] = await bundle(root, config);
   // 2. 引入 ssr-entry 模块的打包产物
   const ssrEntryPath = path.join(root, '.temp', 'ssr-entry.js');
   // 3. 服务端渲染，产出 html

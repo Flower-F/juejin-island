@@ -1,11 +1,11 @@
 import { relative } from 'path';
 import { SiteConfig } from 'shared/types';
-import { Plugin } from 'vite';
+import { normalizePath, Plugin } from 'vite';
 
 const SITE_DATA_ID = 'island:site-data';
 
 // 这是一个典型的 Vite 虚拟模块的实现
-export function pluginConfig(config: SiteConfig, restart: () => Promise<void>): Plugin {
+export function pluginConfig(config: SiteConfig, restart?: () => Promise<void>): Plugin {
   return {
     name: 'island:site-data',
     resolveId(id) {
@@ -20,7 +20,7 @@ export function pluginConfig(config: SiteConfig, restart: () => Promise<void>): 
       }
     },
     async handleHotUpdate(ctx) {
-      const customWatchedFiles = [config.configPath];
+      const customWatchedFiles = [normalizePath(config.configPath)];
       const include = (id: string) => customWatchedFiles.some((file) => id.includes(file));
 
       if (include(ctx.file)) {
