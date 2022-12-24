@@ -1,13 +1,12 @@
 import * as path from 'path';
 import { build as viteBuild, InlineConfig } from 'vite';
 import { RollupOutput } from 'rollup';
-import pluginReact from '@vitejs/plugin-react';
 import { CLIENT_ENTRY_PATH, SERVER_ENTRY_PATH } from './constants';
 import fs from 'fs-extra';
 // import ora from 'ora';
 import { pathToFileURL } from 'url';
 import { SiteConfig } from 'shared/types';
-import { pluginConfig } from './plugin-island/config';
+import { createVitePlugins } from './vitePlugin';
 
 // 通过 dynamicImport，绕过 ts 编译，避免 import 语句被编译为 require
 // const dynamicImport = new Function('m', 'return import(m)');
@@ -27,7 +26,7 @@ export async function bundle(root: string, config: SiteConfig) {
           },
         },
       },
-      plugins: [pluginReact(), pluginConfig(config)],
+      plugins: createVitePlugins(config),
       ssr: {
         noExternal: ['react-router-dom'],
       },
